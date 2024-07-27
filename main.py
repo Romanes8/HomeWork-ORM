@@ -30,26 +30,30 @@ def add_test_data():
         session.add(model(id=record.get('pk'), **record.get('fields')))
     session.commit()
 
-#функция запроса в БД по имени издателя(задание №2)
+#функция запроса в БД по имени издателя ил id(задание №2)
 def query():
-    pub_name = input('Введите имя издателя: ')
+    pub_name_or_id = input('Введите имя издателя или id: ')
+
     res = session.query(Book).with_entities(Book.title, Shop.name, Sale.price, Sale.date_sale) \
         .join(Publisher, Publisher.id == Book.id_publisher) \
         .join(Stock, Stock.id_book == Book.id) \
         .join(Shop, Shop.id == Stock.id_shop) \
-        .join(Sale, Sale.id_stock == Stock.id) \
-        .filter(Publisher.name == pub_name) \
-        .all()
+        .join(Sale, Sale.id_stock == Stock.id)
+
+    if pub_name_or_id.isdigit():
+        result = res.filter(Publisher.id == pub_name_or_id).all()
+    else:
+        result = res.filter(Publisher.name == pub_name_or_id).all()
 
     t = PrettyTable(['Книга', 'Магазин', 'Цена', 'Дата покупки'])
-    for c in res:
+    for c in result:
         t.add_row([c[0], c[1], c[2], c[3]])
     print(t)
 
 
 print('1 - создать таблицы в БД')
 print('2 - заполнить таблицы тестовыми данными (Задание №3)')
-print('3 - выполнить запрос по имени издателя (Задание №2)')
+print('3 - выполнить запрос по имени или id издателя (Задание №2)')
 action = input('Выберите действие: ')
 
 if action == '1':
@@ -61,7 +65,7 @@ if action == '1':
     if action_1 == '1':
         add_test_data()
         print('Тестовые данные загружены')
-        print('1 - Выполнить запрос по имени издателя (Задание №2)')
+        print('1 - Выполнить запрос по имени или id издателя (Задание №2)')
         print('2 - закрыть сессию')
         action_2 = input('Выберите действие: ')
         if action_2 == '1':
@@ -77,7 +81,7 @@ if action == '1':
 if action == '2':
     add_test_data()
     print('Тестовые данные загружены')
-    print('1 - Выполнить запрос по имени издателя (Задание №2)')
+    print('1 - Выполнить запрос по имени или id издателя (Задание №2)')
     print('2 - закрыть сессию')
     action_3 = input('Выберите действие: ')
     if action_3 == '1':
